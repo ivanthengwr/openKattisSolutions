@@ -7,30 +7,56 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <algorithm>
+#include <math.h>
 
-int main() {    
-    //  freopen("in.txt", "r", stdin); //To input test cases
-    while(1) {
-        int N;
-        std::cin >> N;
-        std::vector <std::pair<int, int>> studentLocation;
+int maxWord, n, x[20], y[20];
+double dist[20][20], dp[1<<16];
 
-        //If N is 0, exit and end the program
-        if (N == 0) {
-            break;
+double rec(int word) 
+{
+    if(word==maxWord) {
+        return 0;
+    } else if (dp[word] !=-1) {
+        return dp[word];
+    } else {
+        int i,j;
+        double d=1<<30;
+        for( i =0; i<2*n; i++) { //check if player at position i is available
+            if(!(word&(1<<i))) {
+                for(j=i+1; j<2*n; j++) {
+                    if(!word&(1 <<j)) {
+                        d = std::min(d, dist[j][j]+rec(word|(1<<i)|(i<<j)));
+                    }
+                }
+            } 
         }
+        return dp[word]=d;
+    }
+}
 
-        //Else, process the input
-        for (int i = 0; i < 2*N; i++) {
-            int x = 0;
-            int y = 0;
-            std:: cin >> x >> y;
-            studentLocation.push_back(std::make_pair(x,y));
-        }
+double dis(int i, int j) {   
+    return sqrt((x[i]-x[j])*(x[i]-x[j])+(y[i]-y[j])*(y[i]-y[j])); 
+}
 
-        for (const auto& p : studentLocation) {
-            std::cout << p.first << ", " << p.second << std::endl;
-        }
+int main()
+{
+    //freopen("in.txt", "r", stdin); //To input test cases
+    char name[20];
+    int i,j,kase=1;
+    scanf("%d",&n);
+    while(n)
+    {
+        maxWord = (1<<(2*n))-1; // 2^no._of_players - 1
+        for(i=0;i<2*n;i++)
+            scanf("%s %d %d",name,x+i,y+i); //input
+        for(i=0;i<2*n;i++)
+            for(j=i+1;j<2*n;j++)
+                dist[i][j]=dist[j][i]=dis(i,j); //calculate distances of probable pairs
+        for(i=0;i<=maxWord;i++)
+            dp[i]=-1;   //initialize
+        printf("Case %d: %.2lf\n",kase++,rec(0));   //call function rec with initial word 0
+        scanf("%d",&n);
     }
     return 0;
 }
